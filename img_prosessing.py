@@ -2,57 +2,74 @@ import cv2
 import numpy as np
 import os
 from pathlib import Path
-
-imgs_dir = r"C:\Users\lordo\python projects\leaf_clsifier\images"
-
+#%% attempts
 repo_dir = Path(".").absolute()
 imgs_dir = repo_dir/"sample_imgs"
 
 img_lst = os.listdir(imgs_dir)
 
-img1_path = os.path.join(imgs_dir, img_lst[0])
+img1_path = os.path.join(imgs_dir, img_lst[2])
 img1 = cv2.imread(img1_path,1)
 
-cv2.namedWindow("img1", cv2.WINDOW_NORMAL) 
-cv2.imshow("img1", img1)
 
 edges = cv2.Canny(img1,50,100)
-blur = cv2.GaussianBlur(edges,(11,11),0)
+kernel = np.ones((29,29),np.uint8)
+dilation = cv2.dilate(edges,kernel,iterations = 1)
 
+contours, hierarchy = cv2.findContours(dilation,
+                                       cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_NONE)
+largest = max(contours, key = cv2.contourArea)
+
+color = cv2.cvtColor(dilation, cv2.COLOR_GRAY2BGR)
+cv2.drawContours(img1, largest, -1, (0, 0, 255), 3)
+
+#    cv2.namedWindow("color", cv2.WINDOW_NORMAL)
+#    cv2.imshow("original img", color)
+cv2.namedWindow("original img", cv2.WINDOW_NORMAL)
+cv2.imshow("original img", img1)
+
+
+x = largest.max(axis = 0)[0][0]
+y = largest.max(axis = 0)[0][1]
+
+cv2.circle(color,(x,y),10,(0,0,255),-1)
+cv2.imshow("dilation", color)
+
+#%%
 ret,thresh = cv2.threshold(blur,110,255,0)
 
-kernel = np.ones((35,35),np.uint8)
-dilation = cv2.dilate(thresh,kernel,iterations = 1)
-blur = cv2.GaussianBlur(dilation,(19,19),0)
+#%% "main" sort of
 
-cv2.namedWindow("dilation", cv2.WINDOW_NORMAL) 
-cv2.imshow("dilation", blur)
+def find_leaf_contour(img):
 
-#%%
+    edges = cv2.Canny(img,50,100)
+    kernel = np.ones((29,29),np.uint8)
+    dilation = cv2.dilate(edges,kernel,iterations = 1)
 
+    contours, hierarchy = cv2.findContours(dilation,
+        cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    largest = max(contours, key = cv2.contourArea)
 
-ret,thresh = cv2.threshold(imgray,127,255,0)
-image, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    color = cv2.cvtColor(dilation, cv2.COLOR_GRAY2BGR)
+    cv2.drawContours(img, largest, -1, (0, 0, 255), 3)
 
-#%%
+#    cv2.namedWindow("color", cv2.WINDOW_NORMAL)
+#    cv2.imshow("original img", color)
+    cv2.namedWindow("original img", cv2.WINDOW_NORMAL)
+    cv2.imshow("original img", img)
 
 for i in range(1, len(img_lst)):
-    
-    img1_path = os.path.join(imgs_dir, img_lst[i])
-    img1 = cv2.imread(img1_path,1)
-    
-    img2_path = os.path.join(imgs_dir, img_lst[i-1])
-    img2 = cv2.imread(img2_path,1)
-    
-#    if compare_imgs(img1, img2) == None:
-#        print(i)
-#        break
-    
-    #%%
-    
 
-    
-    
+    img1_path = os.path.join(imgs_dir, img_lst[i])
+    img = cv2.imread(img1_path,1)
+
+    find_leaf_contour(img)
+    if cv2.waitKey(-1) == ord('a'):
+        print("a")
+
+
+
 
 
 
