@@ -11,9 +11,11 @@ img_lst = os.listdir(imgs_dir)
 img1_path = os.path.join(imgs_dir, img_lst[2])
 img1 = cv2.imread(img1_path,1)
 
+IMG_SIZE = 500
+img1 = cv2.resize(img1, (IMG_SIZE, IMG_SIZE))
 
 edges = cv2.Canny(img1,50,100)
-kernel = np.ones((29,29),np.uint8)
+kernel = np.ones((5,5),np.uint8)
 dilation = cv2.dilate(edges,kernel,iterations = 1)
 
 contours, hierarchy = cv2.findContours(dilation,
@@ -41,10 +43,16 @@ ret,thresh = cv2.threshold(blur,110,255,0)
 
 #%% "main" sort of
 
-def find_leaf_contour(img):
+def multiply_by_rotate():
+    pass
 
+
+
+def find_leaf_contour(img):
+    IMG_SIZE = 400
+    img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     edges = cv2.Canny(img,50,100)
-    kernel = np.ones((29,29),np.uint8)
+    kernel = np.ones((9,9),np.uint8)
     dilation = cv2.dilate(edges,kernel,iterations = 1)
 
     contours, hierarchy = cv2.findContours(dilation,
