@@ -37,7 +37,7 @@ for img in tqdm(os.listdir(imgs_dir)):  # iterate over each image
     img_array = cv2.imread(os.path.join(imgs_dir,img))  # convert to array
     new_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
     training_data.append([new_array, cat_indx])
-
+    break
     #%%
     cv2.namedWindow("original img", cv2.WINDOW_NORMAL)
     cv2.imshow("original img", new_array)
@@ -81,9 +81,10 @@ X = pickle.load(pickle_in)
 
 pickle_in = open("y.pickle","rb")
 y = pickle.load(pickle_in)
-#%%
+#%
 X = X/255.0
 #y = y1
+
 #%%
 model = Sequential()
 
@@ -91,19 +92,47 @@ model.add(Conv2D(256, (3, 3), input_shape=X.shape[1:]))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(256, (3, 3)))
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-
 model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
 
-model.add(Dense(64))
+model.add(Dense(128))
+model.add(Activation('relu'))
 
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
-model.compile(loss='categorical_crossentropy',
+model.compile(loss="binary_crossentropy",#'categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 #%
-model.fit(X, y, batch_size=22, epochs=3, validation_split=0.1)
+model.fit(X, y, batch_size=5, epochs=3, validation_split=0.1)
+#%%# TensorFlow and tf.keras
+
+import tensorflow as tf
+from tensorflow import keras
+
+fashion_mnist = keras.datasets.fashion_mnist
+
+(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
+
+train_images = train_images / 255.0
+
+test_images = test_images / 255.0
+
+
+model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(28, 28)),
+    keras.layers.Dense(128, activation='relu'),
+    keras.layers.Dense(10)
+])
+
+model.compile(optimizer='adam',
+          loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+          metrics=['accuracy'])
+
+
+model.fit(X, y, epochs=10, validation_split=0.1)
+
+
+#%%
+probability_model = tf.keras.Sequential([model,
+                                         tf.keras.layers.Softmax()])
