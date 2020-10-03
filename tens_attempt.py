@@ -117,12 +117,13 @@ fashion_mnist = keras.datasets.fashion_mnist
 train_images = train_images / 255.0
 
 test_images = test_images / 255.0
+#%%
 
 
 model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(28, 28)),
+    keras.layers.Flatten(input_shape=X.shape[1:]),
     keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dense(10)
+    keras.layers.Dense(4)
 ])
 
 model.compile(optimizer='adam',
@@ -136,3 +137,43 @@ model.fit(X, y, epochs=10, validation_split=0.1)
 #%%
 probability_model = tf.keras.Sequential([model,
                                          tf.keras.layers.Softmax()])
+#%%
+import tensorflow as tf
+
+from tensorflow.keras import datasets, layers, models
+#%%
+flipped = tf.image.flip_left_right(image)
+cropped = tf.image.central_crop(image, central_fraction=0.95)
+rotated = tf.image.rot90(image)
+
+
+
+#%%
+tf.config.threading.set_intra_op_parallelism_threads(2)
+tf.config.threading.set_inter_op_parallelism_threads(2)
+
+with tf.device('/CPU:0'):
+    train_images, test_images = X, y
+
+    model = models.Sequential()
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=X.shape[1:]))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+
+
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+
+
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(4))
+
+    model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+
+    model.fit(X, y, epochs=10, validation_split=0.1)
