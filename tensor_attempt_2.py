@@ -12,7 +12,7 @@ y = pickle.load(pickle_in)
 #%
 X = X/255.0
 #y = y1
-
+print("done loading")
 #%%          FOR CPU RESTRICTION!
 #tf.config.threading.set_intra_op_parallelism_threads(2)
 #tf.config.threading.set_inter_op_parallelism_threads(2)
